@@ -340,6 +340,7 @@ This incident surfaces structural issues worth fixing even if you turn out to be
 - **Principle of least privilege on the GitHub App scope.** If Vercel doesn't need org-wide repo access, restrict to the repos it actually deploys.
 - **Deploy hook rotation as routine.** Quarterly.
 - **Build a secret scan into your pre-commit and CI.** Trufflehog, gitleaks, or equivalent. Retroactively scan repo history for anything that may have been committed and then rotated — assume what was once committed is still in a clone somewhere.
+- **Audit the Vercel account config, not just the secrets.** Rotating tokens handles leaks, but leaves structural exposure intact: `NEXT_PUBLIC_` values ending up client-side, tokens with no expiry or scope, deployment protection off on preview, dangling aliases, unsigned webhooks. These live in the Vercel API config, not the source tree, so secret scanners miss them. One open-source option: [vercelsior](https://github.com/Su1ph3r/vercelsior).
 - **Document your Vercel integration footprint** as part of your SOC 2 / ISO evidence. You will be asked by customers.
 - **Run this playbook as a tabletop** in Q3 against a hypothetical similar-shape incident at a different platform provider. The incident isn't special to Vercel; the muscle memory generalizes.
 
