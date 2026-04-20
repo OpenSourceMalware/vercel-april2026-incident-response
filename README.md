@@ -1,6 +1,6 @@
 # Vercel April 2026 Incident Response Guide
 
-Last updated: 20 April 2026 (v2 — incorporates Vercel CEO update of 20 April) @ 10.43 AM AEST/Brisbane
+Last updated: 20 April 2026 @ 12.07 PM AEST/Brisbane - (v2 — incorporates Vercel CEO update of 20 April) 
 
 ---
 
@@ -14,7 +14,7 @@ On 20 April, Vercel CEO Guillermo Rauch published a detailed update confirming t
 
 Here’s the important indicators of compromise section from that security advisory:
 
-![Vercel Screenshot](images/vercel_screenshot.png)
+![Vercel IOC info](images/vercel_screenshot.png)
 
 Pretty light on details. They don’t even tell you *where* to check for that one lone Google IOC.  As a Vercel customer, I am pretty disappointed with this level of detail.  Help me understand what to look for!  Tell me where to go to learn if I’ve been compromised or not!
 
@@ -91,14 +91,14 @@ Two goals: prevent new damage, preserve evidence.
 1. **Freeze deployments.** Pause auto-deploys on production branches. You want to prevent an attacker-modified build from shipping, and you want to stop the audit log from churning.
 2. **Disable Vercel’s GitHub App.** If you have the Vercel GitHub App installed, which you will if you are doing automatic deployments to Vercel when you push new code to GitHub.  You can find your GitHub apps installed at `https://github.com/organizations/<GitHub-Organization>/settings/installations`
     
-    ![Disable the Vercel GitHub App](images/vercel-github-disable.png)
+    ![Disable Vercel's GitHub App](images/vercel-github-disable.png)
     
 3. **Identify what access the GitHub App has.** Click that configure button above and audit what repositories the Vercel app had access to.  This tells you what you need to focus on right now.  Go to GitHub → Organization → Settings → GitHub Apps → Vercel. Review:
     - Repository access (all repos vs. selected)
     - Permissions granted
     - Installation date and who installed it
 
-![Vercel GitHub Repo Access](images/vercel-github-repo-access.png)
+![GitHub Repo Access](images/vercel-github-repo-access.png)
 
 1. **Snapshot the Vercel audit log** for your team. Export or screen-capture it immediately. The retention window is limited and the UI does not expose everything. Get this before you start making changes that will pollute the log.  You can find it at [https://vercel.com/activity-log](https://vercel.com/activity-log)
 2. **Enable “Observability Plus”.** This is an additional paid feature from Vercel, and it sucks that I have to suggest you enable it and PAY for it, but in this case I think its the best thing to do during incident response.  I am certainly not happy about it, but I’ve enabled it simply because it saves the audit logs longer than the default which is VERY short.
@@ -124,7 +124,27 @@ Do not yet make announcements or rotate secrets. You want the snapshot first.
 
 ---
 
-## Phase 1: Credential rotation
+## Phase 1: Check for Indicators of Compromise (IOC)
+
+The details from Vercel’s announcement are pretty light:
+
+![Vercel IOC list](images/vercel-ioc-info.png)
+
+As best we can tell, they are suggesting that you go to your Google Workspace Admin Console and look for this googleusercontent.com app.  Here’s how to find this in the console:
+
+1. In your workspace admin [console](https://admin.google.com/ac/home) go to **Security** > **Access and data control** > **API controls** and find the accessed and pending apps.
+    
+    ![Vercel Google Permissions](images/vercel-google-admin-perms.png)
+    
+2. Then look in the different lists for the IOC which is apparently an oauth app: `110671459871-30f1spbu0hptbs60cb4vsmv79i7bbvqj.apps.googleusercontent.com`
+    
+    ![Google Bad Apps List](images/vercel-google-list-apps.png)
+    
+3. If you find it immediately remove it and consult an incident response partner.  This is above my pay grade.
+
+---
+
+## Phase 2: Credential rotation
 
 Rotation is the single highest-value action. Do it in priority order so that if you get interrupted, the most dangerous stuff has been handled.
 
@@ -182,7 +202,7 @@ What you have to rotate depends on what your GitHub and Vercel environments have
 
 ---
 
-## Phase 2: Repo-level hunting
+## Phase 3: Repo-level hunting
 
 For repos that were connected to Vercel:
 
@@ -212,7 +232,7 @@ If you find evidence of an unauthorized publish, report it to npm security (`sec
 
 ---
 
-## Phase 3: Linear integration review
+## Phase 4: Linear integration review
 
 If your team uses the Vercel ↔ Linear integration:
 
@@ -228,13 +248,13 @@ If your team uses the Vercel ↔ Linear integration:
 
 ---
 
-## Phase 4: Downstream system log review
+## Phase 5: Downstream system log review
 
 Rotating credentials invalidates attacker persistence in most cases, but they may have already used the access. Check the consumers of your rotated secrets for signs of use during the exposure window.
 
 ### Windows to check
 
-Use **1 April 2026 through now** as a conservative lower bound. The incident was disclosed on 19 April but initial access pre-dates disclosure. If Vercel publishes a more specific date, narrow accordingly.
+Use **1 April 2026 through now** as a conservative lower bound. The incident was disclosed on 19 April but initial access pre-dates disclosure. If Vercel publishes a more specific date, we’ll narrow this down accordingly.
 
 ### What to query
 
@@ -257,7 +277,7 @@ As of publication, no IOCs have been released by Vercel. Monitor the Vercel bull
 
 ---
 
-## Phase 5: Detection for lingering compromise
+## Phase 6: Detection for lingering compromise
 
 Attacker persistence after a platform-layer breach commonly takes these forms. Actively hunt for each:
 
