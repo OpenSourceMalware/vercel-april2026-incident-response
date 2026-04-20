@@ -2,6 +2,8 @@
 
 Last updated: 20 April 2026 @ 12.07 PM AEST/Brisbane - (v2 — incorporates Vercel CEO update of 20 April) 
 
+## IMPORTANT: This is not legal or official advice.  If you think you have been compromised please reach out to an incident response partner. This information is offered solely as good will by the OpenSourceMalware team. If you want introductions to incident response companies we can suggest a few that we've worked with.
+
 ---
 
 ## What happened?
